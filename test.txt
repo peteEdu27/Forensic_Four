@@ -1,4 +1,0 @@
-GitHub Username:  peteEdu27
-RepoLink:https://github.com/peteEdu27/Forensic_Four.git
-TeamName: Forensic Four
-Team mates: Utsab, David, Noelle
