@@ -1,3 +1,5 @@
+# TRAMMELL, MONICA|m|39|2014-06-11|431 KIEST BOULEVARD|beat 352|OPEN
+
 FILENAME = "wk03_data_raw_cases_50.txt"  # name of the pipe-delimited data file to read
 CURRENT_YEAR = 2026  # reference year used to calculate how many years a case has been unsolved
 
