@@ -10,7 +10,7 @@ juvenile_open_count = 0    # counts OPEN cases where the victim/subject is under
 oldest_open_year = CURRENT_YEAR   # start high, so the first open case seen becomes the oldest
 oldest_open_name = ""              # name that goes with oldest_open_year
 
-# print a header row for the report, using format specs to left/right align columns
+# print a header row for the report, using format specs to left/right align columns 'Text'; var name print actual value
 print(f"{'CASE':<30}{'YEARS UNSOLVED':>15}  FLAG")
 
 case_file = open(FILENAME, "r")  # open the data file for reading
@@ -21,7 +21,7 @@ for raw_line in case_file:      # loop over the file one line at a time
     if line == "":                # an empty string means it was a blank line
         continue                   # skip blanks, keep looping
 
-    total_records = total_records + 1   # count this line as a real record
+    total_records = total_records + 1   # count each raw line as a real record
 
     fields = line.split("|")   # split the record into a list of fields on the "|" character
 
@@ -50,7 +50,7 @@ for raw_line in case_file:      # loop over the file one line at a time
             stale_count = stale_count + 1  # tally it as stale
             flag = "*** STALE ***"  # mark it in the printed report
 
-        if year < oldest_open_year:   # is this case older than the oldest one seen so far?
+        if year < oldest_open_year:   # is this case older than the oldest one seen so far? if so then set the oldest_open_year and the oldest_open_name to this year and name
             oldest_open_year = year
             oldest_open_name = name
 
