@@ -1,5 +1,5 @@
 # Raw case file: name|sex|age|date|address|beat|status
-data = "wk03_data_raw_cases_50.txt"
+data = "Week_3/wk03_data_raw_cases_50.txt"
 
 # Running totals we build up as we scan through every case in the file
 total = 0            # every case, open or closed
