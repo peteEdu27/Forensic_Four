@@ -7,77 +7,77 @@
 # STEP 1: Read the raw file into a list, one entry per line
 # ============================================================
 
-raw_lines = []                                   # create an empty list; this is our "locker" that will hold every raw line from the file
+raw_lines = []                                   # make an empty box called raw_lines - our "locker" that will hold every line from the file, nothing in it yet
 
-with open("wk04_data_raw_cases_dupes.txt") as f: # open() returns a file object (read mode by default) and "as f" names that object f, our handle for reading the file; "with" auto-closes it when this block ends
-    for line in f:                               # f is the file object defined above; looping over it yields one line of text per pass (including its trailing "\n")
-        raw_lines.append(line)                   # .append() adds this line to the end of the raw_lines list, growing it by one item
+with open("wk04_data_raw_cases_dupes.txt") as f: # open the file like opening a book, nickname it "f"; "with" means Python auto-closes the book for us when this block ends
+    for line in f:                               # read the book one line at a time; each pass, "line" is the next sentence in the file
+        raw_lines.append(line)                   # .append() = drop this line into the end of the raw_lines box
 
-print("Lines in file:     ", len(raw_lines))     # len() counts how many items are in the list; should print 60 to match the file's line count
+print("Lines in file:     ", len(raw_lines))     # len() counts how many things are in the box; print it so we can check: did we read 60 lines?
 
 # ============================================================
 # STEP 2: Normalize every line (strip whitespace, force uppercase)
 # ============================================================
 
-normalized = []                                  # empty list to hold the cleaned version of every line
+normalized = []                                  # another empty box - will hold the CLEANED-UP version of each line
 
-for line in raw_lines:                           # walk through each raw line collected in Step 1
-    clean = line.strip().upper()                 # .strip() removes leading/trailing whitespace and the "\n"; .upper() forces consistent casing so "open" and "OPEN" match later
-    normalized.append(clean)                     # add the cleaned-up line to the normalized list
+for line in raw_lines:                           # go through every messy line from Step 1, one at a time
+    clean = line.strip().upper()                 # two chores in one: .strip() trims extra spaces + the invisible "\n"; .upper() SHOUTS it in caps so "open" and "OPEN" count as the same word later
+    normalized.append(clean)                     # drop the cleaned-up line into the normalized box
 
-print("Normalized lines:  ", len(normalized))    # sanity check: should still be 60, since normalizing doesn't remove any lines
+print("Normalized lines:  ", len(normalized))    # print how many cleaned lines we have - should still be 60, cleaning doesn't delete lines, just tidies them
 
 # ============================================================
 # STEP 3: Dedupe using a set
 # ============================================================
 
-unique_records = set(normalized)                 # set() takes the list and drops any values that are exact duplicates, keeping only one copy of each
+unique_records = set(normalized)                 # a set is a magic box that refuses to hold two copies of the same thing - dump all 60 lines in, exact duplicates vanish automatically
 
-print("Unique records:    ", len(unique_records))                       # count of distinct records left after deduping; should print 52
-print("Duplicates removed:", len(normalized) - len(unique_records))     # total lines minus unique lines = how many duplicates were thrown out; should print 8
+print("Unique records:    ", len(unique_records))                       # count what's left in the set - should be 52, the real records
+print("Duplicates removed:", len(normalized) - len(unique_records))     # started with 60, ended with 52, so 60 - 52 = 8 duplicates got tossed
 
 # ============================================================
 # STEP 4: Loop the UNIQUE records; collect ages, count open cases per beat
 # ============================================================
 
-ages = []                                        # empty list locker that will collect every victim's age (from unique records only)
-per_beat = {}                                    # empty dict locker: each key is a beat label, each value is that beat's count of OPEN cases
+ages = []                                        # empty box to collect every victim's age
+per_beat = {}                                    # empty DICTIONARY - like a wall of labeled lockers: each locker has a name tag (key) and something stored inside (value); no lockers yet
 
-for rec in unique_records:                       # loop over the deduped set, one unique record string at a time
-    fields = rec.split("|")                      # split the record string on the "|" character, producing a list of 7 fields: name, sex, age, date, address, beat, status
+for rec in unique_records:                       # go through the 52 deduplicated records one at a time (the CLEANED, DEDUPED set, not the original messy list)
+    fields = rec.split("|")                      # each record looks like NAME | SEX | AGE | DATE | ADDRESS | BEAT | STATUS; .split("|") chops it into 7 little pieces wherever it sees a "|"
 
-    age = int(fields[2].strip())                 # fields[2] is the age field as text; .strip() removes stray spaces, int() converts the text into a whole number
-    ages.append(age)                             # add this record's age to the running ages list
+    age = int(fields[2].strip())                 # fields[2] = the 3rd piece (counting starts at 0) = age, but it's text like "34 "; .strip() trims spaces, int() turns text "34" into the real number 34
+    ages.append(age)                             # drop that age into our ages box
 
-    beat = fields[5].strip()                     # fields[5] is the beat label (e.g. "BEAT 442"); .strip() removes surrounding spaces
-    status = fields[6].strip()                   # fields[6] is the case status (e.g. "OPEN" or "CLOSED"); .strip() removes surrounding spaces
+    beat = fields[5].strip()                     # grab the 6th piece (the beat label, like "352"), trim spaces off it
+    status = fields[6].strip()                   # grab the 7th piece ("OPEN" or "CLOSED"), trim spaces
 
-    if status == "OPEN":                         # we only want to count/rank beats based on OPEN cases
-        if beat in per_beat:                     # check whether this beat already exists as a key in the dict
-            per_beat[beat] += 1                  # it exists -> increment its existing count by 1
-        else:                                    # otherwise, this is the first OPEN case we've seen for this beat
-            per_beat[beat] = 1                   # create the key and start its count at 1
+    if status == "OPEN":                         # only bother counting this record if the case is still open - closed cases get skipped for the beat ranking
+        if beat in per_beat:                     # ask the dictionary: "do we already have a locker labeled with this beat name?"
+            per_beat[beat] += 1                  # yes we do - add 1 to whatever count is already sitting in that locker
+        else:                                    # no we don't -
+            per_beat[beat] = 1                   # create a brand new locker with this beat's name and put the number 1 in it (first open case we've seen for it)
 
 # ============================================================
 # STEP 5: Print the final report
 # ============================================================
 
-print()                                          # print an empty line so the report is visually separated from the setup output above
-print("=== DEDUPE REPORT ===")                   # section header for the dedupe numbers
-print("Lines in file:      ", len(raw_lines))          # total raw lines read from the file (60)
-print("Unique records:     ", len(unique_records))     # distinct records after deduping (52)
-print("Duplicates removed: ", len(normalized) - len(unique_records))  # how many duplicate lines were removed (8)
+print()                                          # print a blank line (like hitting Enter) so the report isn't a wall of text
+print("=== DEDUPE REPORT ===")                   # section title
+print("Lines in file:      ", len(raw_lines))          # re-print: total raw lines read from the file (60)
+print("Unique records:     ", len(unique_records))     # re-print: distinct records after deduping (52)
+print("Duplicates removed: ", len(normalized) - len(unique_records))  # re-print: how many duplicate lines were removed (8)
 
-print()                                          # blank line before the next section
-print("=== VICTIM AGE PROFILE (unique records only) ===")  # section header for age stats
-print("Youngest:", min(ages))                    # min() scans the ages list and returns the smallest value
-print("Oldest:  ", max(ages))                    # max() scans the ages list and returns the largest value
-print("Average: ", round(sum(ages) / len(ages), 1))  # sum() adds every age together, divide by len() (count of ages) for the mean, round() keeps it to 1 decimal place
+print()                                          # blank line spacer
+print("=== VICTIM AGE PROFILE (unique records only) ===")  # section title
+print("Youngest:", min(ages))                    # min() looks through the whole ages box and finds the smallest number
+print("Oldest:  ", max(ages))                    # max() finds the biggest number in the box
+print("Average: ", round(sum(ages) / len(ages), 1))  # sum() adds up every age, len(ages) is how many ages there are, dividing gives the average; round(...,1) keeps it to 1 decimal (like 39.1)
 
-print()                                          # blank line before the last section
-print("=== BEAT RANKING (most open cases first) ===")  # section header for the beat ranking
+print()                                          # blank line spacer
+print("=== BEAT RANKING (most open cases first) ===")  # section title
 
-for beat in sorted(per_beat, key=per_beat.get, reverse=True):  # sorted() on a dict sorts its keys; key=per_beat.get tells it to sort by each key's VALUE (the count) instead of alphabetically; reverse=True puts the highest counts first
-    count = per_beat[beat]                       # look up the open-case count for this beat
-    bar = "#" * count                            # build a simple text bar chart by repeating "#" count times
-    print(f"{beat:<10}{count:>3}  {bar}")        # f-string: left-align beat name in a 10-character field, right-align count in a 3-character field, then print the bar
+for beat in sorted(per_beat, key=per_beat.get, reverse=True):  # sorted() would normally sort locker NAMES alphabetically; key=per_beat.get says "sort by what's stored inside each locker (the count)" instead; reverse=True = biggest count first
+    count = per_beat[beat]                       # look up how many open cases this beat's locker holds
+    bar = "#" * count                            # multiplying text by a number repeats it that many times - if count is 4, bar becomes "####", a mini bar chart made of hashtags
+    print(f"{beat:<10}{count:>3}  {bar}")        # f-string "fill in the blank": {beat:<10} = beat name, left-aligned, padded to 10 chars wide; {count:>3} = count, right-aligned, padded to 3 chars; then the # bar
