@@ -13,7 +13,7 @@ with open("wk04_data_raw_cases_dupes.txt") as f: # open the file like opening a 
     for line in f:                               # read the book one line at a time; each pass, "line" is the next sentence in the file
         raw_lines.append(line)                   # .append() = drop this line into the end of the raw_lines box
 
-print("Lines in file:     ", len(raw_lines))     # len() counts how many things are in the box; print it so we can check: did we read 60 lines?
+                                                  # (we'll print the line count later, as part of the final report)
 
 # ============================================================
 # STEP 2: Normalize every line (strip whitespace, force uppercase)
@@ -25,16 +25,11 @@ for line in raw_lines:                           # go through every messy line f
     clean = line.strip().upper()                 # two chores in one: .strip() trims extra spaces + the invisible "\n"; .upper() SHOUTS it in caps so "open" and "OPEN" count as the same word later
     normalized.append(clean)                     # drop the cleaned-up line into the normalized box
 
-print("Normalized lines:  ", len(normalized))    # print how many cleaned lines we have - should still be 60, cleaning doesn't delete lines, just tidies them
-
 # ============================================================
 # STEP 3: Dedupe using a set
 # ============================================================
 
 unique_records = set(normalized)                 # a set is a magic box that refuses to hold two copies of the same thing - dump all 60 lines in, exact duplicates vanish automatically
-
-print("Unique records:    ", len(unique_records))                       # count what's left in the set - should be 52, the real records
-print("Duplicates removed:", len(normalized) - len(unique_records))     # started with 60, ended with 52, so 60 - 52 = 8 duplicates got tossed
 
 # ============================================================
 # STEP 4: Loop the UNIQUE records; collect ages, count open cases per beat
@@ -62,20 +57,16 @@ for rec in unique_records:                       # go through the 52 deduplicate
 # STEP 5: Print the final report
 # ============================================================
 
-print()                                          # print a blank line (like hitting Enter) so the report isn't a wall of text
-print("=== DEDUPE REPORT ===")                   # section title
-print("Lines in file:      ", len(raw_lines))          # re-print: total raw lines read from the file (60)
-print("Unique records:     ", len(unique_records))     # re-print: distinct records after deduping (52)
-print("Duplicates removed: ", len(normalized) - len(unique_records))  # re-print: how many duplicate lines were removed (8)
+print("Lines in file:      ", len(raw_lines))                          # total raw lines read from the file (60)
+print("Unique records:     ", len(unique_records))                     # distinct records after deduping (52)
+print("Duplicates removed: ", len(normalized) - len(unique_records))   # how many duplicate lines were removed (8)
 
-print()                                          # blank line spacer
-print("=== VICTIM AGE PROFILE (unique records only) ===")  # section title
-print("Youngest:", min(ages))                    # min() looks through the whole ages box and finds the smallest number
-print("Oldest:  ", max(ages))                    # max() finds the biggest number in the box
-print("Average: ", round(sum(ages) / len(ages), 1))  # sum() adds up every age, len(ages) is how many ages there are, dividing gives the average; round(...,1) keeps it to 1 decimal (like 39.1)
+youngest = min(ages)                             # min() looks through the whole ages box and finds the smallest number
+oldest = max(ages)                               # max() finds the biggest number in the box
+average = round(sum(ages) / len(ages), 1)        # sum() adds up every age, len(ages) is how many ages there are, dividing gives the average; round(...,1) keeps it to 1 decimal (like 39.1)
+print(f"Youngest {youngest} / Oldest {oldest} / Average {average}")   # one-line age profile summary
 
-print()                                          # blank line spacer
-print("=== BEAT RANKING (most open cases first) ===")  # section title
+print("Beat ranking, most open cases first, with # bars")  # section title
 
 for beat in sorted(per_beat, key=per_beat.get, reverse=True):  # sorted() would normally sort locker NAMES alphabetically; key=per_beat.get says "sort by what's stored inside each locker (the count)" instead; reverse=True = biggest count first
     count = per_beat[beat]                       # look up how many open cases this beat's locker holds
