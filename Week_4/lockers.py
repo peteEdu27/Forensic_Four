@@ -53,6 +53,5 @@ with open(data, "r") as file:
    # Sort beats by their open-case count, highest first, and print a bar chart alongside each count
    for key in sorted(beat_dict, key=beat_dict.get, reverse=True):
       value = beat_dict[key]
-      count = value
       bar = "#" * value
-      print(f"Beat {key:<6} {count} {bar}")
+      print(f"Beat {key:<6} {value} {bar}")
