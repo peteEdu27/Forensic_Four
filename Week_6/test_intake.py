@@ -18,3 +18,4 @@ def test_missing_date_rejected():
     row = ["CC-20000", "DELGADO, PATRICE", "M", "60", "", "6115 scyene road", "326", "CLOSED"]
     with pytest.raises(ValueError):
         parse_row(row)
+# python -m pytest Week_6/test_intake.py -v 
