@@ -1,4 +1,4 @@
-# intake.py - Week 6: Armor
+# intake_safe.py - Week 6: Bulletproof Intake
 # Goal: load the case CSV without crashing on bad rows. Every row either
 # passes validation and is LOADED, or fails and goes into QUARANTINE with its
 # line number and the reason it failed.
@@ -12,7 +12,8 @@
 #   CC-20000  -> date is blank
 #   CC-20015  -> age is "unknown"
 #   CC-20024  -> only 6 columns (beat and status are missing)
-#   + a blank line after CC-20035
+#   + a blank line after CC-20035 (not a case at all, so it is skipped,
+#     not quarantined; 89 loaded + 11 quarantined = all 100 cases)
 #
 # Note: names like "KIRKLAND, MONICA, JR, III" have commas INSIDE them, so
 # line.split(",") would cut them into pieces. The csv module understands the
@@ -35,9 +36,11 @@ EXPECTED_FIELDS = 8
 # ============================================================
 
 def parse_row(row):
+    """Validate one CSV row and return it as a dict with real types.
+    Raises ValueError with a reason if the row is bad."""
     # --- Length check ---
-    # A blank line comes in as [] (0 fields); a short row as 6 fields.
-    # Either way we can't trust which column is which, so stop here.
+    # A short row (like CC-20024) comes in with only 6 fields, so we
+    # can't trust which column is which. Stop here.
     if len(row) != EXPECTED_FIELDS:
         raise ValueError(f"expected {EXPECTED_FIELDS} fields, got {len(row)}")
 
@@ -90,6 +93,9 @@ def parse_row(row):
 # ============================================================
 
 def load_cases(path):
+    """Read the CSV at path and return (good, quarantine).
+    good is a list of parsed rows; quarantine is a list of
+    (line_number, reason, raw_row) for every row that failed."""
     good = []
     quarantine = []
 
@@ -103,6 +109,13 @@ def load_cases(path):
         next(reader)
 
         for row in reader:
+            # csv.reader gives a blank line back as an empty list [].
+            # An empty list is "falsy", so "not row" is True for it.
+            # A blank line isn't a case, so skip it instead of
+            # quarantining it.
+            if not row:
+                continue
+
             # This is the "quarantine loop": TRY to parse the row. If
             # parse_row raises ValueError, EXCEPT catches it, and instead of
             # crashing we record the problem and move on to the next row.
@@ -122,7 +135,7 @@ def load_cases(path):
 
 # ============================================================
 # STEP 4: PRINT THE REPORT
-# Only runs when this file is run directly (python intake.py), NOT when
+# Only runs when this file is run directly (python intake_safe.py), NOT when
 # test_intake.py imports it. Otherwise every test run would print the report.
 # ============================================================
 
@@ -132,13 +145,11 @@ if __name__ == "__main__":
 
     good, quarantine = load_cases(data_path)
 
-    print("=== INTAKE ===")
-    print("Loaded:     ", len(good))
-    print("Quarantined:", len(quarantine))
+    print(f"Rows loaded cleanly:   {len(good)}")
+    print(f"Rows quarantined:      {len(quarantine)}")
 
-    print("\n=== QUARANTINE LOG ===")
+    print("\nQuarantine log:")
     for line_num, reason, row in quarantine:
-        # row[0] is the case id, but a blank line has no row[0] at all,
-        # so fall back to "(blank line)" to avoid an IndexError.
-        case_id = row[0] if row else "(blank line)"
-        print(f"line {line_num:>3} | {case_id:<12} | {reason}")
+        # row[0] is the case id. Blank lines were skipped, so every
+        # quarantined row has at least one field.
+        print(f"  line {line_num:>3} | {row[0]:<8} | {reason}")

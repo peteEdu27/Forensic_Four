@@ -1,5 +1,5 @@
 # test_intake.py - Week 6 tests for parse_row()
-# Run from the repo folder with:  python -m pytest WK6ASSNMT
+# Run from this folder with:  pytest test_intake.py
 #
 # pytest finds every function whose name starts with "test_" and runs it.
 # A test PASSES if it finishes without an error, and FAILS if an assert is
@@ -10,7 +10,7 @@ from datetime import date
 # pytest.raises() lets a test say "this code SHOULD raise an error".
 import pytest
 
-from intake import parse_row
+from intake_safe import parse_row
 
 
 # One good row, copied straight from the CSV (CC-20001).
