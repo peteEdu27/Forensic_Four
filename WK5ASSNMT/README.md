@@ -3,7 +3,7 @@
 Use regular expressions to pull phone numbers, case refs, beats and dates out of free-text tipline reports.
 
 ## Files
-- `patterns.py`: the extractors, the tip summaries and the callback count
+- `pattern_hunt.py`: the extractors (each its own `def` with a docstring), the tip summaries and the callback count
 - `data/wk05_data_tipline.txt`: 24 raw tips
 
 ## Steps
@@ -13,12 +13,18 @@ Use regular expressions to pull phone numbers, case refs, beats and dates out of
 4. `summarize_tip()` calls every extractor and prints one line per tip
 5. Callback count: tips with at least one phone vs. tips without
 
+Stretch: `extract_month_dates()` also catches month-name dates (`February 15, 2017` and `15 December 2020`), so every tip shows a date.
+
 ## Run
 ```
-python WK5ASSNMT/patterns.py
+python WK5ASSNMT/pattern_hunt.py
 ```
 
 ## Results
-- 24 tips: 15 have a phone, 9 do not
-- Phones come in two formats: `784-550-8605` and `(783) 200-4610`
-- Dates written out in words (e.g. "February 15, 2017") are not captured, because the assignment only asks for ISO (`2019-02-19`) and US (`4/7/2019`) formats
+```
+Tips processed:       24
+Tips with a callback: 15
+Tips with NO callback: 9  <- these leads die without follow-up
+```
+- Phones are caught in both formats: `(214) 555-1234` and `214-555-1234`
+- Both numeric date formats are extracted: ISO (`2019-02-19`) and US (`4/7/2019`)

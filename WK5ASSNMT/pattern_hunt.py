@@ -1,4 +1,4 @@
-# patterns.py - Week 5: Pattern Hunters
+# pattern_hunt.py - Week 5: Pattern Hunters
 # Goal: pull phone numbers, case refs, beats, and dates out of free-text tips
 # with regular expressions, then summarize each tip on one line.
 #
@@ -39,6 +39,8 @@ PHONE_RE = re.compile(r"(?:\(\d{3}\)\s?|\b\d{3}-)\d{3}-\d{4}\b")
 
 
 def extract_phones(text):
+    """Return every phone number in text, in either (214) 555-1234 or
+    214-555-1234 format. Returns [] if there are none."""
     # findall() returns a list of every match, in the order they appear.
     # If there are none, it returns an empty list [] (not an error).
     return PHONE_RE.findall(text)
@@ -63,21 +65,46 @@ ISO_DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
 # digits ({1,2} means "between 1 and 2 of these"), year is always 4.
 US_DATE_RE = re.compile(r"\b\d{1,2}/\d{1,2}/\d{4}\b")
 
+# STRETCH: month-name dates come in two orders in this file:
+#   February 15, 2017   -> Month day, year
+#   15 December 2020    -> day Month year
+# MONTHS is one long "January|February|...|December" alternation, built with
+# "|".join() so we don't have to type it out twice.
+MONTHS = "|".join([
+    "January", "February", "March", "April", "May", "June", "July",
+    "August", "September", "October", "November", "December",
+])
+MONTH_DATE_RE = re.compile(
+    rf"\b(?:(?:{MONTHS}) \d{{1,2}}, \d{{4}}|\d{{1,2}} (?:{MONTHS}) \d{{4}})\b"
+)
+# (In an rf"..." string, {MONTHS} is filled in by Python, so the regex's own
+# curly braces have to be doubled: \d{{4}} becomes \d{4}.)
+
 
 def extract_case_refs(text):
+    """Return every case reference in text, e.g. ['CC-14589']."""
     return CASE_REF_RE.findall(text)
 
 
 def extract_beats(text):
+    """Return the beat numbers mentioned in text, e.g. ['341'] for 'beat 341'."""
     return BEAT_RE.findall(text)
 
 
 def extract_iso_dates(text):
+    """Return every YYYY-MM-DD date in text, e.g. ['2019-02-19']."""
     return ISO_DATE_RE.findall(text)
 
 
 def extract_us_dates(text):
+    """Return every M/D/YYYY date in text, e.g. ['4/7/2019', '10/1/2015']."""
     return US_DATE_RE.findall(text)
+
+
+def extract_month_dates(text):
+    """STRETCH: return every month-name date in text, in either
+    'February 15, 2017' or '15 December 2020' order."""
+    return MONTH_DATE_RE.findall(text)
 
 
 # ============================================================
@@ -86,6 +113,7 @@ def extract_us_dates(text):
 # ============================================================
 
 def summarize_tip(number, text):
+    """Run every extractor on one tip and return a one-line summary."""
     # Small helper: turn a list into "a, b" or "-" if the list is empty,
     # so every column always has something in it.
     def show(items):
@@ -94,8 +122,8 @@ def summarize_tip(number, text):
     phones = extract_phones(text)
     cases = extract_case_refs(text)
     beats = extract_beats(text)
-    # A tip can use either date style, so combine both lists into one.
-    dates = extract_iso_dates(text) + extract_us_dates(text)
+    # A tip can use any of the date styles, so combine all three lists.
+    dates = extract_iso_dates(text) + extract_us_dates(text) + extract_month_dates(text)
 
     # {number:>2} right-aligns the tip number in 2 characters (" 1" .. "24")
     # {...:<16} left-aligns a column in 16 characters so the columns line up.
@@ -136,12 +164,12 @@ print("\n=== TIP SUMMARIES ===")
 for number, tip in enumerate(tips, start=1):
     print(summarize_tip(number, tip))
 
-# Callback count: a tip is "callable" if it has at least one phone number.
+# Callback count: a tip has a callback if it has at least one phone number.
 # len(extract_phones(tip)) >= 1 is True/False; sum() counts each True as 1.
-with_phone = sum(1 for tip in tips if len(extract_phones(tip)) >= 1)
-without_phone = len(tips) - with_phone
+with_callback = sum(1 for tip in tips if len(extract_phones(tip)) >= 1)
+no_callback = len(tips) - with_callback
 
-print("\n=== CALLBACKS ===")
-print("Tips total:         ", len(tips))
-print("With a phone:       ", with_phone)
-print("Without a phone:    ", without_phone)
+print()
+print(f"Tips processed:       {len(tips)}")
+print(f"Tips with a callback: {with_callback}")
+print(f"Tips with NO callback: {no_callback}  <- these leads die without follow-up")
