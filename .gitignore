@@ -1,0 +1,11 @@
+# Never commit PowerPoint files
+*.ppt
+*.pptx
+*.pps
+*.ppsx
+*.pot
+*.potx
+
+# Python cache
+__pycache__/
+.pytest_cache/
