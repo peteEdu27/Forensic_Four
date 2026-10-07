@@ -56,6 +56,11 @@ def load_cases(path):                                # "path" is the file name t
                                                      # after the except, the loop simply keeps going - one bad row never kills the other rows
 
     return good, quarantine                          # hand BOTH lists back to whoever called the function
+    # SCOPE NOTE: good and quarantine are LOCAL to load_cases() and vanish when it ends.
+    # "return" copies the lists out first, so the caller can catch them in its own variables.
+    # The names can match or differ (a, b = load_cases(...) works too); what matters is that they point at the same lists.
+    # Then report(good, quarantine) passes them in again as PARAMETERS. Three sets of names, same two lists:
+    #   load_cases (local) --return--> main (new variables) --argument--> report (parameters)
 
 
 # ============================================================
@@ -77,7 +82,18 @@ def report(good, quarantine):                        # takes the two lists that 
 # STEP 4: Run it. The "if __name__" guard means this block runs when you
 # type "python intake_safe.py" but NOT when pytest imports parse_row from this file.
 # ============================================================
+# SUMMARY - what is "if __name__ == "__main__"?"
+# - This file does two things: it DEFINES functions, and it RUNS them on the CSV.
+# - A def only defines a function; it does not run it. This block at the bottom is what actually starts the program.
+# - When another file imports this one (like pytest does), Python runs the whole file. We do NOT want the CSV
+#   loaded and the report printed just because the tests borrowed parse_row.
+# - Python gives every file a built-in variable called __name__:
+#     run it directly (python intake_safe.py) -> __name__ is "__main__" -> the block runs
+#     imported by another file                -> __name__ is "intake_safe" -> the block is skipped
+# - In short: "only do this part if I was run directly, not if someone just borrowed my functions."
 
 if __name__ == "__main__":                           # True only when this file is run directly, not when it is imported by another file
     good, quarantine = load_cases("wk06_data_raw_cases_100.csv")   # load the file; the function returns two lists and we unpack them into two variables
     report(good, quarantine)                         # print the final report
+
+#main block -> load_cases -> parse_row -> load cases -> main block - > report -end
