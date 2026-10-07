@@ -45,11 +45,9 @@ def load_cases(path):                                # "path" is the file name t
         reader = csv.reader(f)                       # csv.reader splits each line into a LIST of fields, even when a comma sits inside quotes ("KIRKLAND, MONICA")
         header = next(reader)                        # next() pulls the FIRST row (the column titles) so the loop below only sees data rows
 
-        for row in reader:                           # walk through every remaining row, one at a time
+        for line_num, row in enumerate(reader, start=2):   # enumerate hands us a counter AND the row; start=2 because line 1 was the header, so the first data row is line 2
             if row == []:                            # a completely blank line comes through as an empty list
                 continue                             # continue = skip this pass of the loop; a blank line is not a record, so it is not counted as good OR bad
-
-            line_num = reader.line_num               # the csv reader remembers which physical line of the file it is on (counts from 1)
 
             try:                                     # TRY the risky thing...
                 good.append(parse_row(row))          # ...validate the row; if it passes, add the clean dict to the good list
@@ -72,7 +70,7 @@ def report(good, quarantine):                        # takes the two lists that 
     print("QUARANTINE LOG - every rejected row, with the reason:")   # section title
 
     for line_num, reason, raw in quarantine:         # each quarantine entry is a 3-item tuple; this unpacks it into three named variables
-        print(f"  line {line_num:>3}: {reason:<45} | {raw[:25]}...")   # {line_num:>3} = right-aligned in 3 spaces; {reason:<45} = left-aligned in 45 spaces; raw[:25] = only the first 25 characters of the row
+        print(f"  line {line_num}: {reason} | {raw[:25]}...")   # {line_num} = the file line number; {reason} = why the row was rejected; raw[:25] = only the first 25 characters of the row
 
 
 # ============================================================
