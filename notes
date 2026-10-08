@@ -1,0 +1,114 @@
+Best practice is to keep it. Nearly every Python style guide recommends it for any file that both defines functions and runs something.
+
+What it means
+
+Python sets a built-in variable called __name__ in every file it loads:
+
+If you run the file directly (python intake_safe.py), __name__ is "__main__".
+If another file imports it (from intake_safe import parse_row), __name__ is "intake_safe".
+So if __name__ == "__main__": reads as "only do this part when I was run directly, not when someone borrowed my functions."
+
+Why it's the right way
+
+Your file has two jobs: it defines tools (parse_row, load_cases, report), and it runs them on the CSV. The guard separates the two. Without it:
+
+Importing the file for its functions also loads the CSV and prints the report.
+Anything that imports it depends on the working directory, which is how a test run from the repo root would crash.
+You can't reuse the functions on a different file without side effects.
+For this assignment
+
+The grader only runs the script and pytest from week06, and both work either way. So removing it won't cost you points here. It is a habit worth building, though, since later weeks will import your earlier code.
+
+I'd restore it, but it's your file. Want me to put it back (and fix the stale comment on the log line while I'm there)?
+
+
+
+
+I'll use four real rows from your file: lines 2, 3, 17 and 26. The full file has 100 rows, but these four show every path.
+
+Phase 1: the caller starts things off
+
+good, quarantine = load_cases("wk06_data_raw_cases_100.csv")
+Execution jumps into load_cases. The caller waits.
+
+Phase 2: inside load_cases
+It starts with good = [] and quarantine = []. Then next(reader) consumes the header line, so the loop sees only data rows.
+
+Line 2: CC-20000,"DELGADO, PATRICE",M,60,,6115 scyene road,326,CLOSED
+
+csv.reader splits it into 8 fields. The quoted comma stays inside the name.
+parse_row passes the length check, and int("60") works.
+row[4] is "", so it raises ValueError("missing date").
+The except catches it and runs quarantine.append((2, 'missing date', 'CC-20000,DELGADO, PATRICE,M,60,,...')).
+State: good = [], quarantine = [1 item]
+
+Line 3: CC-20001,"OKAFOR, TASHA",M,61,2011-10-24,...
+
+Every check passes, so parse_row returns a dict with the name cleaned to Okafor, Tasha.
+good.append(...) adds it.
+State: good = [1 item], quarantine = [1 item]
+
+Line 17: CC-20015,"REYES, ALICIA",M,unknown,2009-06-08,...
+
+The length check passes, then int("unknown") fails on its own with a ValueError.
+It's caught and quarantined with the reason invalid literal for int()....
+State: good = [1], quarantine = [2]
+
+Line 26: CC-20024,"PALACIOS, FELIX",M,38,2002-10-02,5928 peavy road
+
+It has only 6 fields, so len(row) != 8 raises "expected 8 fields, got 6".
+It's quarantined.
+State: good = [1], quarantine = [3]
+
+The loop keeps going through the other 96 rows. At the end, the real totals are good with 89 dicts and quarantine with 11 tuples.
+
+Phase 3: the return
+return good, quarantine sends both lists back. load_cases ends and its local names vanish. The caller stores the lists in its own good and quarantine.
+
+Phase 4: the caller passes them to report
+
+report(good, quarantine)
+report's parameters now point at those same two lists. Inside report:
+
+
+Rows loaded cleanly:   89
+Rows quarantined:      11
+
+QUARANTINE LOG - every rejected row, with the reason:
+  line 2: missing date | CC-20000,DELGADO, PATRICE...
+  line 17: invalid literal for int() with base 10: 'unknown' | CC-20015,REYES, ALICIA,M,...
+  line 26: expected 8 fields, got 6 | CC-20024,PALACIOS, FELIX,M...
+  ...
+Each quarantine entry is (line_num, reason, raw), which is why the for line_num, reason, raw in quarantine: loop can unpack it into three variables. The raw[:25] slice cuts each row off after 25 characters.
+
+Notice that the line-2 tuple was created in Phase 2 and is printed in Phase 4 by a different function. That works because the data travelled through the return and then through the caller's argument.
+
+
+
+on here, the things are out of step thats why i am confused
+6:44 PM
+I think the confusion is that the file's order doesn't match the order things run. If that's not what you meant, tell me which part and I'll redo it.
+
+The order the file is written in, top to bottom:
+
+parse_row (line 13)
+load_cases (line 39)
+report (line 70)
+The if __name__ block (line 95)
+The order Python runs it:
+
+Python reads top to bottom, but the three def lines only store the functions. Nothing inside them runs yet.
+It reaches the if __name__ block at the bottom. This is where the program actually starts.
+Line 96 calls load_cases, so execution jumps up to line 39.
+Inside load_cases, line 53 calls parse_row, so execution jumps up to line 13. It does this once for each row, 100 times.
+parse_row finishes and execution returns to line 53.
+load_cases finishes at line 58 and execution returns to line 96.
+Line 97 calls report, so execution jumps up to line 70.
+report finishes and the program ends.
+As a trace of line numbers:
+
+
+95 → 96 → 39 → (48 → 53 → 13 → ... back to 53 → ...) ×100 → 58 → 96 → 97 → 70 → ... → end
+The file reads like a story with parse_row first, but the execution starts at the bottom and jumps up into the functions as they're called. That's why my walkthrough seemed to jump around: it followed the execution order, not the order of the file.
+
+Is that the mismatch you meant, or did you mean something else, like the comments in the file?
