@@ -112,7 +112,6 @@ def build_report(cases, stats):                                                 
     lines.append(f"Data rows read: {stats['rows_read']}")                                      # every row the loop looked at
     lines.append(f"Blank lines skipped: {stats['blanks_skipped']}")                            # blank rows, not quarantined
     lines.append(f"Repeated header rows skipped: {stats['headers_skipped']}")                  # repeated headers, not quarantined
-    lines.append(f"Raw data rows (after skipping blanks and headers): {stats['raw_rows_counted']}")# the top of the intake funnel
     lines.append("Rows quarantined by reason:")                                                # label for the breakdown below
     for reason in sorted(stats["reason_counts"]):                                              # alphabetical order, for a stable report
         lines.append(f"  {reason}: {stats['reason_counts'][reason]}")                          # how many rows hit this reason
@@ -171,8 +170,8 @@ def build_report(cases, stats):                                                 
 
     return "\n".join(lines)                                                                    # the whole report as one string
 
-def main(raw_path="midterm_cases_raw.csv"):                                                    # run the whole pipeline: raw file in, three files out (run from this folder)
-    cases, quarantine, stats = load_cases(raw_path)                                            # clean the raw file
+def main():                                                                                    # run the whole pipeline: raw file in, three files out
+    cases, quarantine, stats = load_cases("Midterm/midterm_cases_raw.csv")                     # clean the raw file
 
     write_clean_csv(cases, "cases_clean.csv")                                                  # save every clean case
     write_quarantine_csv(quarantine, "quarantine.csv")                                         # save every rejected row

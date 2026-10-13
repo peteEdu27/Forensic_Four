@@ -2,7 +2,6 @@
 Data rows read: 5129
 Blank lines skipped: 14
 Repeated header rows skipped: 3
-Raw data rows (after skipping blanks and headers): 5112
 Rows quarantined by reason:
   bad case_id: 38
   future date: 17
