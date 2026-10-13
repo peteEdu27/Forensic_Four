@@ -1,9 +1,5 @@
 import csv                                                                                     # standard library module for reading/writing CSV files
-import os                                                                                      # builds file paths relative to this script's folder
-import sys                                                                                     # reads an optional raw-file path from the command line
 from case_model import Case                                                                    # the Case class that cleans + validates one row
-
-HERE = os.path.dirname(os.path.abspath(__file__))                                              # the folder this script lives in, wherever it's run from
 
 DECADES = [1980, 1990, 2000, 2010, 2020]                                                       # the five decades the report breaks clearance rates down by
 
@@ -175,19 +171,15 @@ def build_report(cases, stats):                                                 
 
     return "\n".join(lines)                                                                    # the whole report as one string
 
-def main():                                                                                    # run the whole pipeline: raw file in, three files out
-    if len(sys.argv) > 1:                                                                      # a raw-file path was given on the command line
-        raw_path = sys.argv[1]                                                                 # use it
-    else:
-        raw_path = os.path.join(HERE, "midterm_cases_raw.csv")                                 # otherwise use the raw file next to this script
+def main(raw_path="midterm_cases_raw.csv"):                                                    # run the whole pipeline: raw file in, three files out (run from this folder)
     cases, quarantine, stats = load_cases(raw_path)                                            # clean the raw file
 
-    write_clean_csv(cases, os.path.join(HERE, "cases_clean.csv"))                              # save every clean case
-    write_quarantine_csv(quarantine, os.path.join(HERE, "quarantine.csv"))                     # save every rejected row
+    write_clean_csv(cases, "cases_clean.csv")                                                  # save every clean case
+    write_quarantine_csv(quarantine, "quarantine.csv")                                         # save every rejected row
     report = build_report(cases, stats)                                                        # build the report text
     print(report)                                                                              # show it on console
 
-    with open(os.path.join(HERE, "report.txt"), "w") as f:                                     # also save it to a file
+    with open("report.txt", "w") as f:                                                         # also save it to a file
         f.write(report)                                                                        # write the report text to disk
 
 if __name__ == "__main__":                                                                     # only run main() when this file is executed directly, not when imported
