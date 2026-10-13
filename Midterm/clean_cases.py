@@ -171,7 +171,7 @@ def build_report(cases, stats):                                                 
     return "\n".join(lines)                                                                    # the whole report as one string
 
 def main():                                                                                    # run the whole pipeline: raw file in, three files out
-    cases, quarantine, stats = load_cases("Midterm/midterm_cases_raw.csv")                     # clean the raw file
+    cases, quarantine, stats = load_cases("midterm_cases_raw.csv")                     # clean the raw file
 
     write_clean_csv(cases, "cases_clean.csv")                                                  # save every clean case
     write_quarantine_csv(quarantine, "quarantine.csv")                                         # save every rejected row
