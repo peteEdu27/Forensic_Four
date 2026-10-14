@@ -1,7 +1,7 @@
-import re                                                                  # regex module for pattern matching
-from datetime import datetime, date                                        # datetime for parsing, date for TODAY and comparisons
+import re                                 # regex module for pattern matching
+from datetime import datetime, date       # datetime for parsing, date for TODAY and comparisons
 
-TODAY = date(2026, 10, 7)                                                  # fixed "current date" used for staleness/future checks
+TODAY = date.today()                      # fixed "current date" used for staleness/future checks
 
 def clean_case_id(raw):
     """Normalize a raw case id to 'CC-#####', or raise if it can't be."""
@@ -77,36 +77,36 @@ def extract_callback_phone(tip_notes):
     else:
         return ""                                                          # otherwise no callback phone found
 
-class Case:                                                                # represents one cleaned, validated case record
-    def __init__(self, row):                                               # build a Case from a raw CSV row
-        if len(row) != 9:                                                  # every valid row must have exactly 9 fields
-            raise ValueError("wrong field count")                          # reject malformed rows
+class Case:                                            # represents one cleaned, validated case record
+    def __init__(self, row):                           # build a Case from a raw CSV row
+        if len(row) != 9:                              # every valid row must have exactly 9 fields
+            raise ValueError("wrong field count")      # reject malformed rows
 
-        self.case_id = clean_case_id(row[0])                               # field 0: case id
-        self.victim_name = clean_name(row[1])                              # field 1: victim name
-        self.sex = clean_sex(row[2])                                       # field 2: sex
-        self.age = clean_age(row[3])                                       # field 3: age
-        self.incident_date = clean_date(row[4])                            # field 4: incident date
-        self.beat = clean_beat(row[6])                                     # field 6: beat (field 5, address, is unused)
-        self.status = clean_status(row[7])                                 # field 7: case status
-        self.callback_phone = extract_callback_phone(row[8])               # field 8: tip notes, mined for a phone number
+        self.case_id = clean_case_id(row[0])                          # field 0: case id
+        self.victim_name = clean_name(row[1])                         # field 1: victim name
+        self.sex = clean_sex(row[2])                                  # field 2: sex
+        self.age = clean_age(row[3])                                  # field 3: age
+        self.incident_date = clean_date(row[4])                       # field 4: incident date
+        self.beat = clean_beat(row[6])                                # field 6: beat (field 5, address, is unused)
+        self.status = clean_status(row[7])                            # field 7: case status
+        self.callback_phone = extract_callback_phone(row[8])          # field 8: tip notes, mined for a phone number
 
-    @classmethod
-    def from_row(cls, row):                                                # build a Case from a raw CSV row (spec-named entry point)
-        return cls(row)                                                    # delegates to __init__
-
-    @property
-    def year(self):                                                        # the year the incident occurred
-        return self.incident_date.year                                     # pulled straight from incident_date
+    @classmethod                  # method belongs to the class, Case
+    def from_row(cls, row):       # build a Case from a raw CSV row
+        return cls(row)           # return Case(row) and it leads to the __init__ cleaning up fields
 
     @property
-    def decade(self):                                                      # the decade the incident occurred in
-        return (self.year // 10) * 10                                      # floor the year down to the nearest decade
+    def year(self):                        # the year the incident occurred
+        return self.incident_date.year     # pulled straight from incident_date
 
     @property
-    def years_unsolved(self):                                              # how many years since the incident
-        return TODAY.year - self.year                                      # difference between TODAY's year and incident year
+    def decade(self):                      # the decade the incident occurred in
+        return (self.year // 10) * 10      # floor the year down to the nearest decade
 
     @property
-    def is_stale(self):                                                    # whether this case counts as "stale"
-        return self.status == "OPEN" and self.years_unsolved >= 5          # open and unsolved for 5+ years
+    def years_unsolved(self):              # how many years since the incident
+        return TODAY.year - self.year      # difference between TODAY's year and incident year
+
+    @property
+    def is_stale(self):                                              # whether this case counts as "stale"
+        return self.status == "OPEN" and self.years_unsolved >= 5    # open and unsolved for 5+ years

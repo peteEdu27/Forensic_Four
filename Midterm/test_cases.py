@@ -55,7 +55,7 @@ def test_extract_callback_phone_blank_when_missing():                      # no 
 
 def test_case_from_row_builds_case():                                      # a well-formed row builds a fully cleaned Case
     row = ["CC-10003", "Ramirez, K", "M", "24", "1992-06-14",              # case_id, name, sex, age, incident_date
-           "123 Main St", "451", "CLOSED", "no callback left"]            # address (unused), beat, status, tip_notes
+           "123 Main St", "451", "CLOSED", "no callback left"]             # address (unused), beat, status, tip_notes
     case = Case(row)                                                       # build the Case from the raw row
     assert case.case_id == "CC-10003"                                      # id normalized with its dash
     assert case.victim_name == "Ramirez, K"                                # name passed through clean_name

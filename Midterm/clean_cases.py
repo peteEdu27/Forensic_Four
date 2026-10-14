@@ -1,61 +1,61 @@
-import csv                                                                                     # standard library module for reading/writing CSV files
-from case_model import Case                                                                    # the Case class that cleans + validates one row
+import csv                               # standard library module for reading/writing CSV files
+from case_model import Case              # the Case class that cleans + validates one row
 
-DECADES = [1980, 1990, 2000, 2010, 2020]                                                       # the five decades the report breaks clearance rates down by
+DECADES = [1980, 1990, 2000, 2010, 2020] # the five decades the report breaks clearance rates down by
 
-def load_cases(path):                                                                          # read the raw file, return (clean cases, quarantine log, intake stats)
-    cases = []                                                                                 # clean, deduped Case objects, in file order
-    quarantine = []                                                                            # [line_number, reason, raw_row] for every rejected row
-    dupe_case_ids = set()                                                                      # a set catches duplicate case_ids after cleaning
-    reasons = {}                                                                               # dict counts quarantine reasons, e.g. {"missing date": 41}
+def load_cases(path):           # read the raw file, return (clean cases, quarantine log, intake stats)
+    cases = []                  # clean, deduped Case objects, in file order
+    quarantine = []             # [line_number, reason, raw_row] for every rejected row
+    dupe_case_ids = set()       # a set catches duplicate case_ids after cleaning
+    reasons = {}                # dict counts quarantine reasons, e.g. {"missing date": 41}
 
-    rows_read = 0                                                                              # intake counters, all start at zero
+    rows_read = 0               # intake counters, all start at zero
     blanks = 0
     headers = 0
     duplicates = 0
     raw_cases_closed = 0
     raw_cases_count = 0
 
-    with open(path, newline="") as f:                                                          # open the raw case file for reading
-        reader = csv.reader(f)                                                                 # csv.reader splits each line into a list of fields
-        header = next(reader)                                                                  # read row 1 (the header) so we can detect it again later
+    with open(path, newline="") as f:      # open the raw case file for reading
+        reader = csv.reader(f)             # csv.reader splits each line into a list of fields
+        header = next(reader)              # read row 1 (the header) so we can detect it again later
 
-        for number, row in enumerate(reader, 2):                                               # walk every data row; start=2 since line 1 was the header
-            rows_read += 1                                                                     # count every row, good or bad
+        for number, row in enumerate(reader, 2):  # walk every data row; start=2 since line 1 was the header
+            rows_read += 1                        # count every row, good or bad
 
-            is_blank = True                                                                    # assume blank until we find a non-empty field
-            for field in row:                                                                  # check every field in this row
-                if field.strip() != "":                                                        # a field with real content in it
-                    is_blank = False                                                           # so this row isn't blank after all
-                    break                                                                      # no need to check the rest
-            if is_blank:                                                                       # no fields at all, or every field was empty/whitespace
-                blanks += 1                                                                    # count it
-                continue                                                                       # skip it, don't quarantine it
+            is_blank = True                 # assume blank until we find a non-empty field
+            for field in row:               # check every field in this row
+                if field.strip() != "":     # a field with real content in it
+                    is_blank = False        # so this row isn't blank after all
+                    break                   # no need to check the rest
+            if is_blank:                    # no fields at all, or every field was empty/whitespace
+                blanks += 1                 # count it
+                continue                    # skip it, don't quarantine it
 
-            if row == header:                                                                  # a repeated header row (merged exports)
-                headers += 1                                                                   # count it
-                continue                                                                       # skip it, don't quarantine it
+            if row == header:              # a repeated header row (merged exports)
+                headers += 1               # count it
+                continue                   # skip it, don't quarantine it
 
-            raw_cases_count += 1                                                               # this is a real data row, count it toward the raw-vs-clean comparison
-            if len(row) == 9 and row[7] == "CLOSED":                                           # tally the RAW status before any cleaning touches it
-                raw_cases_closed += 1                                                          # this raw row's status field was exactly "CLOSED"
+            raw_cases_count += 1                       # this is a real data row, count it toward the raw-vs-clean comparison
+            if len(row) == 9 and row[7] == "CLOSED":   # tally the RAW status before any cleaning touches it
+                raw_cases_closed += 1                  # this raw row's status field was exactly "CLOSED"
 
             try:
-                case = Case.from_row(row)                                                      # clean every field; raises ValueError if something can't be fixed
-            except ValueError as error:                                                        # the row has a critical field that couldn't be repaired
-                reason = str(error)                                                            # the quarantine reason, e.g. "missing date"
-                reasons[reason] = reasons.get(reason, 0) + 1                                   # bump that reason's count
-                quarantine.append([number, reason, ",".join(row)])                             # log the line number, reason, and raw row
-                continue                                                                       # keep looping, always keep looping
+                case = Case.from_row(row)             # clean every field (in case_model); raises ValueError if something can't be fixed
+            except ValueError as error:                              # the row has a critical field that couldn't be repaired
+                reason = str(error)                                  # the quarantine reason, e.g. "missing date"
+                reasons[reason] = reasons.get(reason, 0) + 1         # bump that reason's count
+                quarantine.append([number, reason, ",".join(row)])   # log the line number, reason, and raw row
+                continue                                             # keep looping, always keep looping
 
-            if case.case_id in dupe_case_ids:                                                  # same case_id already kept once, cleaned
-                duplicates += 1                                                                # count it
-                continue                                                                       # drop this duplicate, keep the first one
+            if case.case_id in dupe_case_ids:        # same case_id already kept once, cleaned
+                duplicates += 1                      # count it
+                continue                             # drop this duplicate, keep the first one
 
-            dupe_case_ids.add(case.case_id)                                                    # remember this case_id so later duplicates get caught
-            cases.append(case)                                                                 # keep this clean case
+            dupe_case_ids.add(case.case_id)          # remember this case_id so later duplicates get caught
+            cases.append(case)                       # keep this clean case
 
-    stats = {                                                                                  # bundle every intake number the report needs
+    stats = {                          # bundle every intake number the report needs
         "rows_read": rows_read,
         "blanks_skipped": blanks,
         "headers_skipped": headers,
@@ -64,11 +64,10 @@ def load_cases(path):                                                           
         "raw_status_closed": raw_cases_closed,
         "raw_rows_counted": raw_cases_count,
     }
-    return cases, quarantine, stats                                                            # everything downstream needs
+    return cases, quarantine, stats     # everything downstream needs
 
 def case_id_key(c):                                                                            # sort key: sort Case objects by their case_id string
-    return c.case_id                                                                           # e.g. "CC-10003" comes before "CC-10017"
-
+    return c.case_id                                                                           # e.g. "CC-10003" comes before "CC-10017
 def write_clean_csv(cases, path):                                                              # write cases_clean.csv, sorted by case_id, in the exact spec format
     cases = sorted(cases, key=case_id_key)                                                     # alphabetical by case_id, as required
     with open(path, "w", newline="") as f:                                                     # open (or create) the output file for writing
@@ -80,21 +79,21 @@ def write_clean_csv(cases, path):                                               
             beat = "" if c.beat is None else c.beat                                            # blank beat stays blank too
             writer.writerow([c.case_id, c.victim_name, c.sex, age, c.incident_date.strftime("%Y-%m-%d"), c.year, beat, c.status, c.callback_phone])# one clean case, in the exact column order from the spec
 
-def write_quarantine_csv(quarantine, path):                                                    # write quarantine.csv - one row per rejected line
-    with open(path, "w", newline="") as f:                                                     # open (or create) the output file for writing
-        writer = csv.writer(f)                                                                 # csv.writer turns lists back into comma-separated lines
-        writer.writerow(["line_number", "reason", "raw_row"])                                  # header row
-        writer.writerows(quarantine)                                                           # every rejected row, with its line number and reason
+def write_quarantine_csv(quarantine, path):                       # write quarantine.csv - one row per rejected line
+    with open(path, "w", newline="") as f:                        # open (or create) the output file for writing
+        writer = csv.writer(f)                                    # csv.writer turns lists back into comma-separated lines
+        writer.writerow(["line_number", "reason", "raw_row"])     # header row
+        writer.writerows(quarantine)                              # every rejected row, with its line number and reason
 
-def clearance_rate(group):                                                                     # the fraction of a group of cases that are CLOSED
-    closed_count = 0                                                                           # how many cases in this group are closed
-    for c in group:                                                                            # look at every case in the group
-        if c.status == "CLOSED":                                                               # this one is closed
-            closed_count += 1                                                                  # count it
+def clearance_rate(group):                                       # the fraction of a group of cases that are CLOSED
+    closed_count = 0                                             # how many cases in this group are closed
+    for c in group:                                              # look at every case in the group
+        if c.status == "CLOSED":                                 # this one is closed
+            closed_count += 1                                    # count it
 
-    if not group:                                                                              # avoid dividing by zero on an empty group
+    if not group:                                 # avoid dividing by zero on an empty group
         return 0
-    return closed_count / len(group)                                                           # fraction of the group that's closed
+    return closed_count / len(group)              # fraction of the group that's closed
 
 def incident_date_key(c):                                                                      # sort key: sort Case objects by their incident date
     return c.incident_date                                                                     # oldest incidents sort first
