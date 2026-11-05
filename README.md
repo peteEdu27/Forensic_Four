@@ -16,6 +16,8 @@ pip install -r requirements.txt
 pytest
 python -m src.get_data         # downloads both sources into data/
 python -m src.series           # writes reports/dallas_series.csv + sanity checks
+python -m src.charts           # writes reports/clearance_trend.png
+python -m src.casemap          # writes reports/dallas_map.html (open in a browser)
 ```
 
 ## Repo layout
@@ -25,6 +27,8 @@ Forensic_Four/
 ├─ data/              # raw inputs (gitignored except .gitkeep)
 ├─ src/
 │  ├─ __init__.py
+│  ├─ casemap.py      # wk10: folium map of WaPo cases -> dallas_map.html
+│  ├─ charts.py       # wk10: matplotlib trend chart -> clearance_trend.png
 │  ├─ get_data.py     # wk9: downloads MAP + WaPo into data/
 │  ├─ intake.py       # parse_row, load_cases
 │  ├─ models.py       # the Case class
