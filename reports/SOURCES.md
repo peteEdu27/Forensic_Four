@@ -17,7 +17,7 @@ Case-level homicides, Dallas subset (1,567 cases, 2007 to early 2017). Licensed 
 |---|---|---|---|
 | `dallas_series.csv` | `src/series.py` | MAP / FBI UCR | FBI definition: cleared by arrest **or** exceptional means, counted in the year the clearance happened (can include prior-year cases) |
 | `clearance_trend.png` | `src/charts.py` | `dallas_series.csv` (MAP / FBI UCR) | FBI definition, as above. 2025 is a partial year, marked as provisional |
-| `dallas_map.html` | `src/casemap.py` | Washington Post, Dallas subset | Post disposition: orange = `Open/No arrest`, green = `Closed by arrest` or `Closed without arrest`. Base map © OpenStreetMap contributors |
+| `dallas_map.html` | `src/casemap.py` | Washington Post, Dallas subset | Post disposition: orange = `Open/No arrest`, green = `Closed by arrest` or `Closed without arrest`. Base map © Esri |
 
 The Washington Post counts a case solved only when its disposition is `Closed by arrest`.
 That is a different definition from the FBI's. Any comparison of the two must say so.
