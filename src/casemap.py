@@ -62,11 +62,17 @@ Source: Washington Post Unsolved Homicide Database
 </div>"""
 
 
+ESRI_TILES = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}"
+ESRI_ATTR = "Tiles &copy; Esri"
+
+
 def make_map(w):
     """One CircleMarker per case, colored by disposition, plus a legend."""
-    # default OpenStreetMap tiles (deck 10, slide 6). The supplement's
-    # "cartodbpositron" now needs a CARTO API key and can render blank.
-    m = folium.Map(location=DALLAS_CENTER, zoom_start=11)
+    # default OpenStreetMap tiles (deck 10, slide 6) get blocked in some
+    # environments, and the supplement's "cartodbpositron" now needs a CARTO
+    # API key and can render blank. Esri's basemap needs neither.
+    m = folium.Map(location=DALLAS_CENTER, zoom_start=11,
+                    tiles=ESRI_TILES, attr=ESRI_ATTR)
 
     for _, row in w.iterrows():
         color = marker_color(row["disposition"])
