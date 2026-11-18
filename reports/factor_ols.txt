@@ -10,7 +10,7 @@ Dep. Variable:          clearance_pct   R-squared:                       0.214
 Model:                            OLS   Adj. R-squared:                  0.168
 Method:                 Least Squares   F-statistic:                     4.627
 Date:                Wed, 18 Nov 2026   Prob (F-statistic):             0.0462
-Time:                        17:21:25   Log-Likelihood:                -69.713
+Time:                        17:30:10   Log-Likelihood:                -69.713
 No. Observations:                  19   AIC:                             143.4
 Df Residuals:                      17   BIC:                             145.3
 Df Model:                           1                                         
@@ -37,7 +37,7 @@ Dep. Variable:          clearance_pct   R-squared:                       0.170
 Model:                            OLS   Adj. R-squared:                  0.114
 Method:                 Least Squares   F-statistic:                     3.066
 Date:                Wed, 18 Nov 2026   Prob (F-statistic):              0.100
-Time:                        17:21:25   Log-Likelihood:                -62.886
+Time:                        17:30:10   Log-Likelihood:                -62.886
 No. Observations:                  17   AIC:                             129.8
 Df Residuals:                      15   BIC:                             131.4
 Df Model:                           1                                         
