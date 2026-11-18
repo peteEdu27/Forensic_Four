@@ -18,6 +18,8 @@ python -m src.get_data         # downloads both sources into data/
 python -m src.series           # writes reports/dallas_series.csv + sanity checks
 python -m src.charts           # writes reports/clearance_trend.png
 python -m src.casemap          # writes reports/dallas_map.html (open in a browser)
+python -m src.get_census       # wk12: needs CENSUS_API_KEY in .env -> data/census_dallas.csv
+python -m src.factor           # wk12: OLS -> reports/factor_ols.txt (see factor_writeup.md)
 ```
 
 ## Repo layout
@@ -29,6 +31,8 @@ Forensic_Four/
 │  ├─ __init__.py
 │  ├─ casemap.py      # wk10: folium map of WaPo cases -> dallas_map.html
 │  ├─ charts.py       # wk10: matplotlib trend chart -> clearance_trend.png
+│  ├─ factor.py       # wk12: clearance ~ poverty rate OLS + lag-1 (statsmodels)
+│  ├─ get_census.py   # wk12: Census ACS 1-year, Dallas city, one row per year
 │  ├─ get_data.py     # wk9: downloads MAP + WaPo into data/
 │  ├─ intake.py       # parse_row, load_cases
 │  ├─ models.py       # the Case class
