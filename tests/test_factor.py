@@ -54,3 +54,25 @@ def test_tidy_rates_and_suppressed_values():
     assert df.loc[0, "poverty_rate"] == pytest.approx(0.2)
     assert df.loc[0, "unemployment_rate"] == pytest.approx(0.05)
     assert pd.isna(df.loc[0, "median_income"])
+
+
+def test_acs_keeps_year_when_employment_table_missing(monkeypatch):
+    # pre-2011 ACS 1-year has no B23025; the poverty data must still come through
+    import src.get_census as gc
+
+    def fake_get(year, codes):
+        if codes == gc.OPTIONAL:
+            return None
+        return {"NAME": "Dallas city, Texas", "B01003_001E": "1200000",
+                "B19013_001E": "40000", "B17001_001E": "1000", "B17001_002E": "250"}
+
+    monkeypatch.setattr(gc, "_get", fake_get)
+    df = tidy(pd.DataFrame([gc.acs(2008)]))
+    assert df.loc[0, "year"] == 2008
+    assert df.loc[0, "poverty_rate"] == pytest.approx(0.25)
+    assert pd.isna(df.loc[0, "unemployment_rate"])
+
+
+def test_core_and_optional_cover_every_variable():
+    import src.get_census as gc
+    assert set(gc.CORE) | set(gc.OPTIONAL) == set(gc.VARIABLES)

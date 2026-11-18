@@ -102,7 +102,8 @@ def main() -> None:
         f"Window: {window}, years: {merged.year.tolist()}\n\n"
         + "\n".join(lines) + "\n\n"
         + "=== PRIMARY ===\n" + m1.summary().as_text() + "\n\n"
-        + "=== LAG-1 ===\n" + m2.summary().as_text() + "\n")
+        + "=== LAG-1 ===\n" + m2.summary().as_text() + "\n",
+        encoding="utf-8")
     print(f"saved: {OLS_OUT}")
 
 
