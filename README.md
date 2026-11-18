@@ -15,11 +15,19 @@ source .venv/bin/activate      # Mac/Linux
 pip install -r requirements.txt
 pytest
 python -m src.get_data         # downloads both sources into data/
+python -m src.fetch_city       # needs DALLAS_APP_TOKEN in .env -> data/case.db
 python -m src.series           # writes reports/dallas_series.csv + sanity checks
 python -m src.charts           # writes reports/clearance_trend.png
 python -m src.casemap          # writes reports/dallas_map.html (open in a browser)
 python -m src.get_census       # wk12: needs CENSUS_API_KEY in .env -> data/census_dallas.csv
 python -m src.factor           # wk12: OLS -> reports/factor_ols.txt (see factor_writeup.md)
+```
+
+## .env
+
+```
+DALLAS_APP_TOKEN=...   # Dallas OpenData app token, needed by src/fetch_city.py
+CENSUS_API_KEY=...     # Census API key, needed by src/get_census.py (wk12)
 ```
 
 ## Repo layout
@@ -32,6 +40,7 @@ Forensic_Four/
 │  ├─ casemap.py      # wk10: folium map of WaPo cases -> dallas_map.html
 │  ├─ charts.py       # wk10: matplotlib trend chart -> clearance_trend.png
 │  ├─ factor.py       # wk12: clearance ~ poverty rate OLS + lag-1 (statsmodels)
+│  ├─ fetch_city.py   # Dallas OpenData murder incidents -> data/case.db
 │  ├─ get_census.py   # wk12: Census ACS 1-year, Dallas city, one row per year
 │  ├─ get_data.py     # wk9: downloads MAP + WaPo into data/
 │  ├─ intake.py       # parse_row, load_cases
