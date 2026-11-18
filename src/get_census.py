@@ -33,21 +33,39 @@ VARIABLES = {
 }
 
 
-def acs(year: int) -> dict | None:
-    """One ACS 1-year row for Dallas city, or None if that year doesn't exist."""
-    params = {"get": "NAME," + ",".join(VARIABLES), "for": "place:19000", "in": "state:48",
+# B23025 (employment status) only exists in ACS 1-year from 2011 on. Asking for it
+# in the same request as the poverty table makes the API reject the whole year
+# ("unknown variable"), which silently dropped 2005-2010. So it is fetched separately
+# and left blank where the table doesn't exist.
+CORE = ["B01003_001E", "B19013_001E", "B17001_001E", "B17001_002E"]
+OPTIONAL = ["B23025_003E", "B23025_005E"]
+
+
+def _get(year: int, codes: list[str]) -> dict | None:
+    """One request for Dallas city. Returns {code: value} or None if unavailable."""
+    params = {"get": "NAME," + ",".join(codes), "for": "place:19000", "in": "state:48",
               "key": os.environ["CENSUS_API_KEY"]}
     r = requests.get(f"https://api.census.gov/data/{year}/acs/acs1", params=params,
                      timeout=60, allow_redirects=False)
     if "missing_key" in r.headers.get("location", "") or "invalid_key" in r.headers.get("location", ""):
         raise RuntimeError("Census API rejected the key. Check CENSUS_API_KEY in .env "
                            "and that you clicked the activation link in the email.")
-    # 204 / 404 / 400 = that year-table combination doesn't exist. Skip it.
+    # 204 / 404 / 400 = that year-table combination doesn't exist.
     if r.status_code != 200 or not r.content.strip().startswith(b"["):
-        print(f"  {year}: no data (HTTP {r.status_code})")
+        print(f"  {year} {','.join(codes)}: no data (HTTP {r.status_code}) {r.text[:80].strip()}")
         return None
     header, row = r.json()[:2]
-    return dict(zip(header, row)) | {"year": year}
+    return dict(zip(header, row))
+
+
+def acs(year: int) -> dict | None:
+    """One ACS 1-year row for Dallas city, or None if that year doesn't exist.
+    Employment variables are blank (NaN after tidy) for years without table B23025."""
+    core = _get(year, CORE)
+    if core is None:
+        return None
+    extra = _get(year, OPTIONAL) or {code: None for code in OPTIONAL}
+    return core | extra | {"year": year}
 
 
 def tidy(raw: pd.DataFrame) -> pd.DataFrame:
